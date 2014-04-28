@@ -1,0 +1,26 @@
+<package>
+  <description brief="visensor_node">
+
+	ROS interface for the VI-Sensor
+
+  </description>
+  <author>Michael Burri, Pascal Gohl and Thomas Schneider</author>
+  <license>Apache 2.0</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://www.skybotix.com</url>
+
+  <depend package="roscpp"/>
+  <depend package="sensor_msgs"/>
+  <depend package="opencv2"/>
+  <depend package="cv_bridge"/>
+  <depend package="std_msgs"/>
+  <depend package="image_transport"/>
+  <depend package="visensor_msgs"/>
+  <depend package="dynamic_reconfigure" />
+  <depend package="camera_info_manager"/>
+
+  <depend package="libvisensor"/>
+
+</package>
+
+
