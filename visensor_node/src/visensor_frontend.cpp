@@ -225,9 +225,11 @@ void ViSensorFrontend::frameCallback(visensor::ViFrame::Ptr frame_ptr) {
 // check if transmission is delayed
   const double frame_delay = (ros::Time::now() - temp_time).toSec();
   _min_frame_delay = std::min(frame_delay, _min_frame_delay);
-  if (frame_delay > _min_frame_delay * 2)
+#if 0  
+	if (frame_delay > _min_frame_delay * 2)
     std::cout << "frame delay longer than expected [ms]: "
               << frame_delay * 1000.0 << std::endl;
+#endif
 
 // get system time of message
   ros::Time temp_time_host;
