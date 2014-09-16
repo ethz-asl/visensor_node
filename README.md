@@ -8,3 +8,25 @@ ROS interface to the Visual-Inertial Sensor developed by the [Autonomous Systems
 A detailed description on how the sensor can be used in ROS is found in the corresponding [ROS-Wiki](http://wiki.ros.org/vi_sensor).
 
 
+## Installation
+
+Check out the sensor library and this node to your catkin workspace:
+
+```
+cd your_catkin_workspace
+git clone https://github.com/ethz-asl/visensor_node.git
+git clone https://github.com/ethz-asl/libvisensor.git
+```
+
+Make sure that you installed all necessary ROS packages
+
+```
+sudo apt-get install libeigen3-dev libopencv-dev libboost-dev ros-indigo-cmake-modules
+```
+Adjust the packet name to your ros version.
+
+Build the package using catkin_make
+
+```
+catkin_make
+```

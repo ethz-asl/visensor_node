@@ -8,7 +8,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,20 +28,25 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
-#include "visensor_frontend.h"
+#include "visensor.hpp"
 
 int main(int argc, char** argv) {
 
   ros::init(argc, argv, "visensor_node");
-  ros::NodeHandle node;
+  ros::NodeHandle nh;
 
-  ViSensorFrontend vi_sensor(node);
+  //default sensor rates
+  int cam_rate;
+  int imu_rate ;
 
-  vi_sensor.startSensors();
+  //Read values from ROS or set to default value
+  nh.param("imuRate", imu_rate, IMU_FREQUENCY);
+  nh.param("camRate", cam_rate, CAMERA_FREQUENCY);
+
+  visensor::ViSensor vi_sensor(nh);
+  vi_sensor.startSensors(cam_rate, imu_rate);
 
   ros::spin();
 
   return 0;
 }
-
