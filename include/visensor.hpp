@@ -70,8 +70,8 @@ static const std::map<SensorId::SensorId, std::string> ROS_CAMERA_NAMES {
 static const std::map<SensorId::SensorId, std::string> ROS_CAMERA_FRAME_NAMES {
   { SensorId::CAM0, "cam0" },
   { SensorId::CAM1, "cam0" },
-  { SensorId::CAM2, "cam2" },
-  { SensorId::CAM3, "cam3" },
+  { SensorId::CAM2, "cam0" },
+  { SensorId::CAM3, "cam0" },
   { SensorId::FLIR0, "tau0" },
   { SensorId::FLIR1, "tau1" },
   { SensorId::FLIR2, "tau2" },

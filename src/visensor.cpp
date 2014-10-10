@@ -52,10 +52,9 @@ void ViSensor::init() {
   try {
     drv_.init();
   } catch (visensor::exceptions const &ex) {
-    ROS_ERROR(ex.what());
+    ROS_ERROR("%s", ex.what());
     exit(1);
   }
-
   list_of_available_sensors_ = drv_.getListOfSensorIDs();
   list_of_camera_ids_ = drv_.getListOfCameraIDs();
   list_of_imu_ids_ = drv_.getListOfImuIDs();
@@ -70,7 +69,7 @@ void ViSensor::init() {
     drv_.setImuCallback(boost::bind(&ViSensor::imuCallback, this, _1, _2));
     drv_.setCameraCalibrationSlot(0); // 0 is factory calibration
   } catch (visensor::exceptions const &ex) {
-    ROS_WARN(ex.what());
+    ROS_WARN("%s", ex.what());
   }
 
   // initialize cameras
@@ -99,12 +98,23 @@ void ViSensor::init() {
     calibration_pub_.insert(std::pair<visensor::SensorId::SensorId, ros::Publisher>(camera_id, temp_pub));
   }
 
-  //Generate Stereo ROS config, assuming than cam0 and cam1 are in fronto-parallel stereo configuration
-  if (getRosStereoCameraConfig(SensorId::CAM0, cinfo_.at(SensorId::CAM0),
-                               SensorId::CAM1, cinfo_.at(SensorId::CAM1)))
-    ROS_INFO("Generated ROS Stereo Calibration, assuming cam0 and cam1 are a stereo pair.");
-  else
-    ROS_INFO("Could not read stereo calibration for cam0 and cam1.");
+
+  if (!drv_.isStereoCameraFlipped()){
+    //Generate Stereo ROS config, assuming than cam0 and cam1 are in fronto-parallel stereo configuration
+    if (getRosStereoCameraConfig(SensorId::CAM0, cinfo_.at(SensorId::CAM0),
+                                 SensorId::CAM1, cinfo_.at(SensorId::CAM1)))
+      ROS_INFO("Generated ROS Stereo Calibration, assuming cam0 (left) and cam1 (right) are a stereo pair.");
+    else
+      ROS_INFO("Could not read stereo calibration for cam0 and cam1.");
+  }
+  else{
+    //Generate Stereo ROS config, assuming than cam0 and cam1 are in fronto-parallel stereo configuration
+    if (getRosStereoCameraConfig(SensorId::CAM1, cinfo_.at(SensorId::CAM1),
+                                 SensorId::CAM0, cinfo_.at(SensorId::CAM0)))
+      ROS_INFO("Generated ROS Stereo Calibration, assuming cam1 (left) and cam0 (right) are a stereo pair.");
+    else
+      ROS_INFO("Could not read stereo calibration for cam0 and cam1.");
+  }
 
   // Initialize imus
   for (auto imu_id : list_of_imu_ids_) {
@@ -315,9 +325,6 @@ void ViSensor::configCallback(visensor_node::DriverConfig &config, uint32_t leve
       drv_.setSensorConfigParam(visensor::SensorId::CAM0, "black_level_calibration_value",
                                 config.cam0_black_level_calibration_value);
 
-    drv_.setSensorConfigParam(visensor::SensorId::CAM0, "row_flip", config.cam0_row_flip);
-    drv_.setSensorConfigParam(visensor::SensorId::CAM0, "column_flip", config.cam0_column_flip);
-
   }
 
   // ========================= CAMERA 1 ==========================
@@ -338,9 +345,6 @@ void ViSensor::configCallback(visensor_node::DriverConfig &config, uint32_t leve
     drv_.setSensorConfigParam(visensor::SensorId::CAM1, "adc_mode", config.cam1_adc_mode);
     drv_.setSensorConfigParam(visensor::SensorId::CAM1, "vref_adc_voltage_level",
                               config.cam1_vref_adc_voltage_level);
-
-    drv_.setSensorConfigParam(visensor::SensorId::CAM1, "row_flip", config.cam1_row_flip);
-    drv_.setSensorConfigParam(visensor::SensorId::CAM1, "column_flip", config.cam1_column_flip);
   }
 
   // ========================= CAMERA 2 ==========================
@@ -361,9 +365,6 @@ void ViSensor::configCallback(visensor_node::DriverConfig &config, uint32_t leve
     drv_.setSensorConfigParam(visensor::SensorId::CAM2, "adc_mode", config.cam2_adc_mode);
     drv_.setSensorConfigParam(visensor::SensorId::CAM2, "vref_adc_voltage_level",
                               config.cam2_vref_adc_voltage_level);
-
-    drv_.setSensorConfigParam(visensor::SensorId::CAM2, "row_flip", config.cam2_row_flip);
-    drv_.setSensorConfigParam(visensor::SensorId::CAM2, "column_flip", config.cam2_column_flip);
   }
 
   // ========================= CAMERA 3 ==========================
@@ -385,8 +386,6 @@ void ViSensor::configCallback(visensor_node::DriverConfig &config, uint32_t leve
     drv_.setSensorConfigParam(visensor::SensorId::CAM3, "vref_adc_voltage_level",
                               config.cam3_vref_adc_voltage_level);
 
-    drv_.setSensorConfigParam(visensor::SensorId::CAM3, "row_flip", config.cam3_row_flip);
-    drv_.setSensorConfigParam(visensor::SensorId::CAM3, "column_flip", config.cam3_column_flip);
   }
 }
 
