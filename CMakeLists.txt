@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 # check libvisensor version, flags not used later
-find_package(libvisensor 1.1.0 REQUIRED)
+find_package(libvisensor 0.1.0 REQUIRED)
 
 add_message_files(
   DIRECTORY msg
@@ -40,10 +40,6 @@ add_definitions(${EIGEN_DEFINITIONS})
 find_package(OpenCV REQUIRED COMPONENTS core highgui imgproc)
 
 generate_dynamic_reconfigure_options(cfg/visensor_node.cfg)
-
-if(NOT DEFINED CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE Release)
-endif(NOT DEFINED CMAKE_BUILD_TYPE)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -Wall -std=c++0x -D__STRICT_ANSI__")
 
