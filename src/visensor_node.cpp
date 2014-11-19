@@ -34,14 +34,15 @@ int main(int argc, char** argv) {
 
   ros::init(argc, argv, "visensor_node");
   ros::NodeHandle nh;
+  ros::NodeHandle private_nh("~");
 
   //default sensor rates
   int cam_rate;
-  int imu_rate ;
+  int imu_rate;
 
   //Read values from ROS or set to default value
-  nh.param("imuRate", imu_rate, IMU_FREQUENCY);
-  nh.param("camRate", cam_rate, CAMERA_FREQUENCY);
+  private_nh.param("imuRate", imu_rate, IMU_FREQUENCY);
+  private_nh.param("camRate", cam_rate, CAMERA_FREQUENCY);
 
   visensor::ViSensor vi_sensor(nh);
   vi_sensor.startSensors(cam_rate, imu_rate);
