@@ -39,7 +39,7 @@ add_definitions(${EIGEN_DEFINITIONS})
 
 find_package(OpenCV REQUIRED COMPONENTS core highgui imgproc)
 
-generate_dynamic_reconfigure_options(cfg/visensor_node.cfg)
+generate_dynamic_reconfigure_options(cfg/Driver.cfg)
 
 if(NOT DEFINED CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
