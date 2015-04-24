@@ -287,7 +287,7 @@ void ViSensor::frameCallback(ViFrame::Ptr frame_ptr, ViErrorCode error) {
       camera_imu_calibrations_[ROS_CAMERA_NAMES.at(static_cast<SensorId::SensorId>(frame_ptr->camera_id))]);
 }
 
-void ViSensor::configCallback(visensor_node::DriverConfig &config, uint32_t level) {
+void ViSensor::configCallback(visensor_node::visensor_nodeConfig &config, uint32_t level) {
 
   std::vector<SensorId::SensorId> all_available_sensor_ids = drv_.getListOfSensorIDs();
 

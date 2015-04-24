@@ -45,7 +45,7 @@
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/fill_image.h>
 
-#include <visensor_node/DriverConfig.h>
+#include <visensor_node/visensor_nodeConfig.h>
 #include "visensor_node/visensor_imu.h"
 #include "visensor_node/visensor_time_host.h"
 #include "visensor_node/visensor_calibration_service.h"
@@ -103,7 +103,7 @@ class ViSensor {
   bool calibrationServiceCallback(visensor_node::visensor_calibration_service::Request &req,
                                   visensor_node::visensor_calibration_service::Response &res);
   //dynamic reconfigure callback
-  void configCallback(visensor_node::DriverConfig &config, uint32_t level);
+  void configCallback(visensor_node::visensor_nodeConfig &config, uint32_t level);
 
  private:
   void init();
@@ -135,9 +135,9 @@ class ViSensor {
 
   std::map<std::string, visensor_node::visensor_calibration> camera_imu_calibrations_;
 
-  dynamic_reconfigure::Server<visensor_node::DriverConfig> dr_srv_;
+  dynamic_reconfigure::Server<visensor_node::visensor_nodeConfig> dr_srv_;
 
-  visensor_node::DriverConfig config_;
+  visensor_node::visensor_nodeConfig config_;
 };
 
 }  //namespace visensor
