@@ -46,23 +46,29 @@
 #include <sensor_msgs/fill_image.h>
 
 #include <visensor_node/DriverConfig.h>
-#include "visensor_node/visensor_imu.h"
-#include "visensor_node/visensor_time_host.h"
-#include "visensor_node/visensor_calibration_service.h"
-#include "visensor_node/visensor_calibration.h"
+#include "visensor_msgs/visensor_imu.h"
+#include "visensor_msgs/visensor_time_host.h"
+#include "visensor_msgs/visensor_trigger.h"
+#include "visensor_msgs/visensor_calibration_service.h"
+#include "visensor_msgs/visensor_calibration.h"
 
 #include <visensor/visensor.hpp>
 
 namespace visensor {
-
 static const std::string CAMERA_FRAME_NAME = "camera";
-static const std::string ROS_TOPIC_NAME = "viensor/";
+static const std::string ROS_TOPIC_NAME = "visensor/";
+static const int NUMBER_OF_SUPPORTED_CAMERAS = 4;
 
-static const std::map<SensorId::SensorId, std::string> ROS_CAMERA_NAMES {
+#ifdef EXPERT_MODE
+static std::map<SensorId::SensorId, std::string> ROS_CAMERA_NAMES {
   { SensorId::CAM0, "cam0" },
   { SensorId::CAM1, "cam1" },
   { SensorId::CAM2, "cam2" },
   { SensorId::CAM3, "cam3" },
+  { SensorId::CAM4, "cam4" },
+  { SensorId::CAM5, "cam5" },
+  { SensorId::CAM6, "cam6" },
+  { SensorId::CAM7, "cam7" },
   { SensorId::FLIR0, "tau0" },
   { SensorId::FLIR1, "tau1" },
   { SensorId::FLIR2, "tau2" },
@@ -72,10 +78,42 @@ static const std::map<SensorId::SensorId, std::string> ROS_CAMERA_FRAME_NAMES {
   { SensorId::CAM1, "cam0" },
   { SensorId::CAM2, "cam0" },
   { SensorId::CAM3, "cam0" },
+  { SensorId::CAM4, "cam0" },
+  { SensorId::CAM5, "cam0" },
+  { SensorId::CAM6, "cam0" },
+  { SensorId::CAM7, "cam0" },
   { SensorId::FLIR0, "tau0" },
   { SensorId::FLIR1, "tau1" },
   { SensorId::FLIR2, "tau2" },
   { SensorId::FLIR3, "tau3" } };
+#else
+static std::map<SensorId::SensorId, std::string> ROS_CAMERA_NAMES {
+  { SensorId::CAM0, "left" },
+  { SensorId::CAM1, "right" },
+  { SensorId::CAM2, "cam2" },
+  { SensorId::CAM3, "cam3" },
+  { SensorId::CAM4, "cam4" },
+  { SensorId::CAM5, "cam5" },
+  { SensorId::CAM6, "cam6" },
+  { SensorId::CAM7, "cam7" },
+  { SensorId::FLIR0, "tau0" },
+  { SensorId::FLIR1, "tau1" },
+  { SensorId::FLIR2, "tau2" },
+  { SensorId::FLIR3, "tau3" } };
+static const std::map<SensorId::SensorId, std::string> ROS_CAMERA_FRAME_NAMES {
+  { SensorId::CAM0, "left" },
+  { SensorId::CAM1, "left" },
+  { SensorId::CAM2, "left" },
+  { SensorId::CAM3, "left" },
+  { SensorId::CAM4, "left" },
+  { SensorId::CAM5, "left" },
+  { SensorId::CAM6, "left" },
+  { SensorId::CAM7, "left" },
+  { SensorId::FLIR0, "tau0" },
+  { SensorId::FLIR1, "tau1" },
+  { SensorId::FLIR2, "tau2" },
+  { SensorId::FLIR3, "tau3" } };
+#endif
 static const std::map<SensorId::SensorId, std::string> ROS_IMU_NAMES {
   { SensorId::IMU0, "imu0" },
   { SensorId::IMU_CAM0, "mpu0" },
@@ -91,22 +129,33 @@ static const std::map<SensorId::SensorId, std::string> ROS_IMU_FRAME_NAMES {
 
 class ViSensor {
  public:
-  ViSensor(ros::NodeHandle& nh);
+  ViSensor(ros::NodeHandle& nh, std::string sensor_ip,
+           const std::map<SensorId::SensorId, int>& slot_ids,
+           const std::map<SensorId::SensorId, int>& is_flipped,
+           const std::map<SensorId::SensorId, visensor::ViCameraLensModel::LensModelTypes>& lens_types,
+           const std::map<SensorId::SensorId, visensor::ViCameraProjectionModel::ProjectionModelTypes>& projection_types,
+           bool use_time_sync);
   ~ViSensor();
-
-  void startSensors(const unsigned int cam_rate, const unsigned int imu_rate);
+  void startSensors( std::map<SensorId::SensorId, int>& cam_rate, const int com_rate_global,
+                    const unsigned int imu_rate, const unsigned int trigger_rate);
 
   //sensor callbacks
   void imuCallback(boost::shared_ptr<ViImuMsg> imu_ptr, ViErrorCode error);
   void frameCallback(ViFrame::Ptr frame_ptr, ViErrorCode error);
+  void denseCallback(ViFrame::Ptr frame_ptr, ViErrorCode error);
+  void frameCornerCallback(ViFrame::Ptr frame_ptr, ViCorner::Ptr corners_ptr);
+  void triggerCallback(ViExternalTriggerMsg::Ptr trigger_ptr);
 
-  bool calibrationServiceCallback(visensor_node::visensor_calibration_service::Request &req,
-                                  visensor_node::visensor_calibration_service::Response &res);
+  bool calibrationServiceCallback(visensor_msgs::visensor_calibration_service::Request &req,
+                                  visensor_msgs::visensor_calibration_service::Response &res);
   //dynamic reconfigure callback
   void configCallback(visensor_node::DriverConfig &config, uint32_t level);
 
  private:
-  void init();
+  void init(const std::string& sensor_ip, const std::map<SensorId::SensorId, int>& slot_ids,
+            const std::map<SensorId::SensorId, int>& is_flipped,
+            const std::map<SensorId::SensorId, visensor::ViCameraLensModel::LensModelTypes>& lens_types,
+            const std::map<SensorId::SensorId, visensor::ViCameraProjectionModel::ProjectionModelTypes>& projection_types);
   bool getRosCameraConfig(const SensorId::SensorId& camera_id, sensor_msgs::CameraInfo& cam_info);
   bool getRosStereoCameraConfig(const SensorId::SensorId& camera_id_0, sensor_msgs::CameraInfo& cam_info_0,
                                 const SensorId::SensorId& camera_id_1, sensor_msgs::CameraInfo& cam_info_1);
@@ -125,19 +174,28 @@ class ViSensor {
   std::map<SensorId::SensorId, ros::Publisher> calibration_pub_;
 
   ros::Publisher pub_time_host_;
+  ros::Publisher trigger_pub_;
   ros::ServiceServer calibration_service_;
 
   ViSensorDriver drv_;
 
   std::vector<SensorId::SensorId> list_of_available_sensors_;
   std::vector<SensorId::SensorId> list_of_camera_ids_;
+  std::vector<SensorId::SensorId> list_of_dense_ids_;
   std::vector<SensorId::SensorId> list_of_imu_ids_;
+  std::vector<SensorId::SensorId> list_of_trigger_ids_;
 
-  std::map<std::string, visensor_node::visensor_calibration> camera_imu_calibrations_;
+
+  std::map<std::string, visensor_msgs::visensor_calibration> camera_imu_calibrations_;
+  std::map<std::string, tf::Transform> camera_imu_transformations_;
+
+  tf::TransformBroadcaster br_;
 
   dynamic_reconfigure::Server<visensor_node::DriverConfig> dr_srv_;
 
   visensor_node::DriverConfig config_;
+
+  bool use_time_sync_;
 };
 
 }  //namespace visensor
