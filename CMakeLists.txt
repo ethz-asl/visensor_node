@@ -37,7 +37,7 @@ find_package(Eigen REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIR})
 add_definitions(${EIGEN_DEFINITIONS})
 
-find_package(OpenCV REQUIRED COMPONENTS core highgui imgproc)
+find_package(OpenCV REQUIRED COMPONENTS core highgui imgproc calib3d)
 
 generate_dynamic_reconfigure_options(cfg/visensor_node.cfg)
 
